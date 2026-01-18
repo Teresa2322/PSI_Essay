@@ -6,7 +6,7 @@ import math
 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(15,  dtype=int )
+psi_initial = np.zeros(10,  dtype=int )
 
 N_its = 1 #number of times to apply Error 
 p_i = 0.2 #probability of bit flip
@@ -32,7 +32,7 @@ print("Qubit after",N_its," noise passes is: ", psi_noisy)
 len_psi = len(psi_initial)
 
 syndr_arr = np.zeros( len_psi - 1, dtype = int)
-err_arr = []
+err_arr = [] # position of error (in non python index notation) on syndrome 
 
 for i in range(0, len_psi - 1): #this range is fine cause indices below add 1 to the last
 	if psi_initial[i] != psi_initial[i+1]:
@@ -60,23 +60,25 @@ def even_or_odd(n):
 
 Nerr = len(err_arr)
 
+
+
 flips_backwards = []
 flips_forwards = []
 
 for i in range(0,Nerr - 1, 2):
 	a_f = err_arr_f[i]
 	b_f = err_arr_f[i+1]
-	a_b = err_arr_b[i]
-	b_b = err_arr_b[i+1]
+	b_b = err_arr_b[i]
+	a_b = err_arr_b[i+1]
 	print("[",a_f,",", b_f,"]")
 	print("[",a_b,",",b_b,"]")
 	for j in range(a_f+1,b_f+1):
 		flips_forwards.append(j)
-	for k in range(a_b,b_b):
+	for k in range(a_b,b_b): #check, but I think this works because 
 		flips_backwards.append(k)
 
 print("forward flips", flips_forwards)
-print("backwards flips:", flips_forwards)
+print("backwards flips:", flips_backwards)
 
 x_f = []
 x_b = []
@@ -90,5 +92,5 @@ flips_forwards.extend(x_f)
 flips_backwards.extend(x_b)
 
 print("forward flips", flips_forwards)
-print("backwards flips:", flips_forwards)
+print("backwards flips:", flips_backwards)
 
