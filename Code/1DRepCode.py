@@ -6,12 +6,14 @@ import math
 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(10,  dtype=int )
+psi_initial = np.zeros(15,  dtype=int )
 
 N_its = 1 #number of times to apply Error 
-p_i = 0.2 #probability of bit flip
+p_i = 0.6 #probability of bit flip
 
 #psi_initial[0] = 1
+psi_initial[-1] = 1
+max_decode = math.floor((len(psi_initial)-1)/2)
 
 #should maybe be defining this as functions actually 
 
@@ -60,37 +62,103 @@ def even_or_odd(n):
 
 Nerr = len(err_arr)
 
+print("number of errors:", Nerr, "and max correctable is ", max_decode )
 
-
-flips_backwards = []
-flips_forwards = []
-
-for i in range(0,Nerr - 1, 2):
-	a_f = err_arr_f[i]
-	b_f = err_arr_f[i+1]
-	b_b = err_arr_b[i]
-	a_b = err_arr_b[i+1]
-	print("[",a_f,",", b_f,"]")
-	print("[",a_b,",",b_b,"]")
-	for j in range(a_f+1,b_f+1):
-		flips_forwards.append(j)
-	for k in range(a_b,b_b): #check, but I think this works because 
-		flips_backwards.append(k)
-
-print("forward flips", flips_forwards)
-print("backwards flips:", flips_backwards)
-
+flips_b = []
+flips_f = []
 x_f = []
 x_b = []
 
-if even_or_odd(Nerr) == 1:
-	for k in range(err_arr_f[-1],len(psi_noisy)): #double check this indexing
-		x_f.append(k)
-	for l in range(err_arr_b[-1],len(psi_noisy)):
-		x_b.append(l)
-flips_forwards.extend(x_f)
-flips_backwards.extend(x_b)
+initialize_zeros = np.zeros(len(psi_initial),dtype = int)
+initialize_ones = np.ones(len(psi_initial),dtype = int)
 
-print("forward flips", flips_forwards)
-print("backwards flips:", flips_backwards)
+flips_ft = []
+flips_bt = []
+
+if even_or_odd(Nerr) == 1: #in case odd
+	
+	for i in range(0,Nerr - 1, 2):
+		a_f = err_arr_f[i]
+		b_f = err_arr_f[i+1]
+		flips_ft.extend(range(a_f+1, b_f+1))
+		b_b = err_arr_b[i]
+		a_b = err_arr_b[i+1]
+		
+		flips_bt.extend(range(min(a_b,b_b), max(a_b,b_b)))
+		#print("[",a_f,",", b_f,"]")
+		#print("[",a_b,",",b_b,"]")
+	#print("trial forward flips", flips_ft)
+	#print("trial backwards flips",flips_bt)
+	
+	for k in range(err_arr_f[-1]+1,len(psi_noisy)+1):
+		x_f.append(k)
+	for l in range(err_arr_b[-1]+1,len(psi_noisy)+1): #understand these ranges better, sort of reversed engineered them
+		x_b.append(l)
+	flips_ft.extend(x_f)
+	flips_bt.extend(x_b)
+	print("forward flip positions ", flips_ft)
+	print("backward flip positions ", flips_bt)
+	
+	'''
+	candidate_f = psi_noisy.copy()
+	for i in flips_f:
+    		candidate_f[i-1] ^= 1
+
+	candidate_b = psi_noisy.copy()
+	for i in flips_b:
+    		candidate_b[i-1] ^= 1
+
+	weight_f = np.sum(candidate_f)
+	weight_b = np.sum(candidate_b)
+	
+	print("candidate f", candidate_f)
+	print("candidate b", candidate_b)
+	
+	if weight_f < weight_b:
+    		psi_decoded = candidate_f
+	else:
+    		psi_decoded = candidate_b
+	'''
+	candidate_f = np.zeros(len(psi_noisy),dtype = int)
+	candidate_b = np.zeros(len(psi_noisy),dtype = int)
+	
+	for i in flips_ft:
+		candidate_f[i-1] = 1
+	for i in flips_bt:
+		candidate_b[i-1] = 1
+	print("candidate f", candidate_f)
+	print("candidate b", candidate_b)
+	
+	weight_f = len(flips_ft)
+	weight_b = len(flips_bt)
+	if weight_f > weight_b:
+		psi_decoded = psi_decoded^candidate_b
+	if weight_b > weight_f:
+		psi_decoded = psi_decoded^candidate_f
+	
+	if weight_b == weight_f:
+		print("we have reached an impasse...majority vote?")
+
+if even_or_odd(Nerr) == 0: #in case even
+	for i in range(0,Nerr - 1, 2):
+                a_f = err_arr_f[i]
+                b_f = err_arr_f[i+1]
+	for j in range(a_f+1,b_f+1):
+		flips_f.append(j)
+	for k in flips_f:
+		initialize_zeros[k-1] = initialize_zeros[k-1]^1
+		initialize_ones[k-1] = initialize_ones[k-1]^1
+	weight_0 = sum(initialize_zeros)
+	weight_1 = sum(initialize_ones)
+	if weight_0 > weight_1:
+		psi_decoded = psi_decoded^initialize_ones
+	if weight_1 > weight_0:
+		psi_decoded = psi_decoded^initialize_zeros
+	if weight_1 == weight_0:
+		print("we have reached an impasse...majority vote?")
+
+
+
+print("decoded psi", psi_decoded)
+
 
