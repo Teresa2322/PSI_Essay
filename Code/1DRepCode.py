@@ -6,12 +6,12 @@ import math
 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(15,  dtype=int )
+psi_initial = np.zeros(20,  dtype=int )
 
 N_its = 1 #number of times to apply Error 
-p_i = 0.2 #probability of bit flip
+p_i = 0.3 #probability of bit flip
 
-psi_initial[0] = 1
+#psi_initial[0] = 1
 #psi_initial[-1] = 1
 max_decode = math.floor((len(psi_initial)-1)/2)
 
