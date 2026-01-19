@@ -9,9 +9,9 @@ rng = np.random.default_rng()
 psi_initial = np.zeros(15,  dtype=int )
 
 N_its = 1 #number of times to apply Error 
-p_i = 0.6 #probability of bit flip
+p_i = 0.2 #probability of bit flip
 
-#psi_initial[0] = 1
+psi_initial[0] = 1
 psi_initial[-1] = 1
 max_decode = math.floor((len(psi_initial)-1)/2)
 
@@ -42,14 +42,13 @@ for i in range(0, len_psi - 1): #this range is fine cause indices below add 1 to
 		err_arr.append(i+1)
 
 print("syndrome array is ", syndr_arr) 
-print("error position is", err_arr)
-#parity check flags ah wait thats just for syndrome extraction again 
+print("error position is", err_arr) 
 
 psi_decoded = psi_noisy.copy()
 
 
 err_arr_f = err_arr.copy()
-err_arr_b = err_arr[::-1].copy() #wait this was silly, but keep reversal for reference
+err_arr_b = err_arr[::-1].copy() 
 
 print("Forward error array:", err_arr_f)
 print("Backward error array:", err_arr_b)
@@ -87,8 +86,6 @@ if even_or_odd(Nerr) == 1: #in case odd
 		flips_bt.extend(range(min(a_b,b_b), max(a_b,b_b)))
 		#print("[",a_f,",", b_f,"]")
 		#print("[",a_b,",",b_b,"]")
-	#print("trial forward flips", flips_ft)
-	#print("trial backwards flips",flips_bt)
 	
 	for k in range(err_arr_f[-1]+1,len(psi_noisy)+1):
 		x_f.append(k)
@@ -97,28 +94,8 @@ if even_or_odd(Nerr) == 1: #in case odd
 	flips_ft.extend(x_f)
 	flips_bt.extend(x_b)
 	print("forward flip positions ", flips_ft)
-	print("backward flip positions ", flips_bt)
-	
-	'''
-	candidate_f = psi_noisy.copy()
-	for i in flips_f:
-    		candidate_f[i-1] ^= 1
+	print("backward flip positions ", flips_bt)	
 
-	candidate_b = psi_noisy.copy()
-	for i in flips_b:
-    		candidate_b[i-1] ^= 1
-
-	weight_f = np.sum(candidate_f)
-	weight_b = np.sum(candidate_b)
-	
-	print("candidate f", candidate_f)
-	print("candidate b", candidate_b)
-	
-	if weight_f < weight_b:
-    		psi_decoded = candidate_f
-	else:
-    		psi_decoded = candidate_b
-	'''
 	candidate_f = np.zeros(len(psi_noisy),dtype = int)
 	candidate_b = np.zeros(len(psi_noisy),dtype = int)
 	
@@ -126,8 +103,8 @@ if even_or_odd(Nerr) == 1: #in case odd
 		candidate_f[i-1] = 1
 	for i in flips_bt:
 		candidate_b[i-1] = 1
-	print("candidate f", candidate_f)
-	print("candidate b", candidate_b)
+	print("noisy candidate f", candidate_f)
+	print("noisy candidate b", candidate_b)
 	
 	weight_f = len(flips_ft)
 	weight_b = len(flips_bt)
@@ -143,8 +120,9 @@ if even_or_odd(Nerr) == 0: #in case even
 	for i in range(0,Nerr - 1, 2):
                 a_f = err_arr_f[i]
                 b_f = err_arr_f[i+1]
-	for j in range(a_f+1,b_f+1):
-		flips_f.append(j)
+		for j in range(a_f + 1, b_f + 1):
+			flips_f.append(j)
+	print("flips in even case", flips_f)
 	for k in flips_f:
 		initialize_zeros[k-1] = initialize_zeros[k-1]^1
 		initialize_ones[k-1] = initialize_ones[k-1]^1
