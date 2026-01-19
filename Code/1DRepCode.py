@@ -12,7 +12,7 @@ N_its = 1 #number of times to apply Error
 p_i = 0.2 #probability of bit flip
 
 psi_initial[0] = 1
-psi_initial[-1] = 1
+#psi_initial[-1] = 1
 max_decode = math.floor((len(psi_initial)-1)/2)
 
 #should maybe be defining this as functions actually 
@@ -83,13 +83,13 @@ if even_or_odd(Nerr) == 1: #in case odd
 		b_b = err_arr_b[i]
 		a_b = err_arr_b[i+1]
 		
-		flips_bt.extend(range(min(a_b,b_b), max(a_b,b_b)))
+		flips_bt.extend(range(min(a_b,b_b)+1, max(a_b,b_b)+1))
 		#print("[",a_f,",", b_f,"]")
 		#print("[",a_b,",",b_b,"]")
 	
 	for k in range(err_arr_f[-1]+1,len(psi_noisy)+1):
 		x_f.append(k)
-	for l in range(err_arr_b[-1]+1,len(psi_noisy)+1): #understand these ranges better, sort of reversed engineered them
+	for l in range(1, err_arr_b[-1]+1): #understand these ranges better, sort of reversed engineered them
 		x_b.append(l)
 	flips_ft.extend(x_f)
 	flips_bt.extend(x_b)
@@ -118,14 +118,16 @@ if even_or_odd(Nerr) == 1: #in case odd
 
 if even_or_odd(Nerr) == 0: #in case even
 	for i in range(0,Nerr - 1, 2):
-                a_f = err_arr_f[i]
-                b_f = err_arr_f[i+1]
-		for j in range(a_f + 1, b_f + 1):
-			flips_f.append(j)
+		a_f = err_arr_f[i]
+		b_f = err_arr_f[i+1]
+		flips_f.extend(range(a_f+1, b_f+1))
 	print("flips in even case", flips_f)
 	for k in flips_f:
 		initialize_zeros[k-1] = initialize_zeros[k-1]^1
 		initialize_ones[k-1] = initialize_ones[k-1]^1
+	print("from initialized zeros", initialize_zeros)
+	print("from initialized ones", initialize_ones)
+
 	weight_0 = sum(initialize_zeros)
 	weight_1 = sum(initialize_ones)
 	if weight_0 > weight_1:
