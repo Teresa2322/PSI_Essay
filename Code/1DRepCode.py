@@ -4,7 +4,7 @@ import math
 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(8,  dtype=int )
+psi_initial = np.zeros(10,  dtype=int )
  
 p_i = 0.3 #probability of bit flip
 
@@ -49,7 +49,7 @@ def even_or_odd(n):
 
 Nerr = len(err_arr)
 
-print("Number of errors:", Nerr)
+#print("Number of errors:", Nerr, " while max is", max_decode, " ?")
 
 #initializing some arrays needed for decoding
 
