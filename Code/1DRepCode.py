@@ -6,7 +6,7 @@ import math
 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(20,  dtype=int )
+psi_initial = np.zeros(8,  dtype=int )
 
 N_its = 1 #number of times to apply Error 
 p_i = 0.3 #probability of bit flip
