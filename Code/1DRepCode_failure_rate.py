@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
  
 rng = np.random.default_rng()
 
-BitLength = 50
+BitLength = 5
  
 p_arr = np.linspace(0.0001,0.8,20) #probability of bit flip
 success_arr = []
@@ -143,4 +143,16 @@ for p_i in p_arr:
 	success_arr.clear()
  
 plt.plot(p_arr,success_prob)
+
+file_name = BitLength
+file_extension = "png"
+file_path = f"SuccessRate_{file_name}.{file_extension}"
+
+plt.xlabel("Probability of Bit Flip")
+plt.ylabel("Success Rate")
+plt.savefig(file_path, dpi=300)
+plt.close()
+
+
 plt.show()
+
