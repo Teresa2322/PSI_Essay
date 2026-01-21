@@ -5,14 +5,14 @@ import matplotlib.pyplot as plt
  
 rng = np.random.default_rng()
 
-BitLength = 5
+BitLength = 30
  
 p_arr = np.linspace(0.0001,0.8,20) #probability of bit flip
 success_arr = []
 success_prob = []
 max_decode = math.floor((BitLength -1)/2)
 
-Nits = 10000
+Nits = 20000
 
 # the amound of loops is criminal, should rewrite this code using functions :(
 for p_i in p_arr:
