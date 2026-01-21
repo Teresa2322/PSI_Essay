@@ -6,7 +6,7 @@ rng = np.random.default_rng()
 
 psi_initial = np.zeros(20,  dtype=int )
  
-p_i = 0.3 #probability of bit flip
+p_i = 0.5 #probability of bit flip
 
 max_decode = math.floor((len(psi_initial)-1)/2)
 
