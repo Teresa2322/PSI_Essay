@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
  
 rng = np.random.default_rng()
 
-BitLength = 30
+BitLength = 50
  
 p_arr = np.linspace(0.0001,0.8,20) #probability of bit flip
 success_arr = []
