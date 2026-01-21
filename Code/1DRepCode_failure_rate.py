@@ -1,21 +1,24 @@
 import numpy as np
 import scipy as sp
 import math 
-
+import matplotlib.pyplot as plt
+ 
 rng = np.random.default_rng()
 
-psi_initial = np.zeros(10,  dtype=int )
+BitLength = 50
  
 p_arr = np.linspace(0.0001,0.8,20) #probability of bit flip
 success_arr = []
-
-max_decode = math.floor((len(psi_initial)-1)/2)
+success_prob = []
+max_decode = math.floor((BitLength -1)/2)
 
 Nits = 10000
 
 # the amound of loops is criminal, should rewrite this code using functions :(
-for p_i in p_arr: 
+for p_i in p_arr:
+	psi_clean = np.zeros(BitLength, dtype=int) 
 	for n in range(Nits):
+		psi_initial = psi_clean.copy()
 		for i in range(1,len(psi_initial)):
     			p = rng.random()
     			if p <= p_i and psi_initial[i] == 0:
@@ -108,20 +111,14 @@ for p_i in p_arr:
 				candidate_r = candidate_f if rng.random() < 0.5 else candidate_b
 				psi_decoded = psi_decoded^candidate_r
 
-			#if weight_b == weight_f:
-				#candidate = candidate_f if rng.random() < 0.5 else candidate_b
-				#psi_decoded = psi_decoded^candidate
 		if even_or_odd(Nerr) == 0: #even number of errors
 			for i in range(0,Nerr - 1, 2):
 				a_f = err_arr_f[i]
 				b_f = err_arr_f[i+1]
 				flips_f.extend(range(a_f+1, b_f+1)) #still (a,b] intervals
-			#print("flips in even case", flips_f)
 			for k in flips_f:
 				initialize_zeros[k-1] = initialize_zeros[k-1]^1
 				initialize_ones[k-1] = initialize_ones[k-1]^1
-			#print("from initialized zeros", initialize_zeros)
-			#print("from initialized ones", initialize_ones)
 
 			weight_0 = sum(initialize_zeros)
 			weight_1 = sum(initialize_ones)
@@ -140,7 +137,10 @@ for p_i in p_arr:
 			success_arr.append(1)
 		else:
 			success_arr.append(0)
-	print("Success rate is: ", 100*sum(success_arr)/len(success_arr), "for p_i = ", p_i )
+	success_rate = 100*sum(success_arr)/len(success_arr)
+	success_prob.append(success_rate)
+	print("Success rate is: ", success_rate, "for p_i = ", p_i )
 	success_arr.clear()
  
-
+plt.plot(p_arr,success_prob)
+plt.show()
