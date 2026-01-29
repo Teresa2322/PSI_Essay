@@ -3,7 +3,7 @@ import scipy as sp
 import math 
 
 rng = np.random.default_rng()
-
+'''
 psi_initial = np.zeros(20,  dtype=int )
 
 p_i = 0.5 #probability of bit flip
@@ -16,30 +16,7 @@ for i in range(1,len(psi_initial)):
         	psi_initial[i] = 1
     	elif p <= p_i and psi_initial[i] == 1:
         	psi_initial[i] = 0
-
-psi_noisy = psi_initial.copy()
-
-print("Noisy state:", psi_noisy)
-
-#syndrome calculation
-
-len_psi = len(psi_initial)
-
-syndr_arr = np.zeros(len_psi - 1, dtype = int)
-err_arr = [] # position of error on syndrome (1-indexing) 
-
-for i in range(0, len_psi - 1): #0-indexing here
-	if psi_initial[i] != psi_initial[i+1]: #flag domain walls with 1
-		syndr_arr[i] = 1
-		err_arr.append(i+1)
-
-print("Syndrome: ", syndr_arr) 
-
-psi_decoded = psi_noisy.copy()
-
-trial1 = [0, 1, 0, 0, 0, 0] #[1, 0, 0, 0, 0,0] #[0,0,1,0,0] #[1, 0, 1, 1, 0] #[1,1,0,0,0]
-syn1 = [1,1,0,0,0] #[1,0,0,0,0] #[0,1,0,0]
-
+'''
 def ECupdate(psi, syndromes):
 	init_arr = np.zeros(2, dtype = int)
 	Eloc_arr = [] #location of errors on psi 0-indexing
@@ -66,6 +43,7 @@ def ECupdate(psi, syndromes):
 				init_arr[0] = 1
 			if sN != sN2:
 				init_arr[1] = 1
+			
 			if np.array_equal(init_arr, np.array([1,1])) or np.array_equal(init_arr, np.array([1,0])): #possibly rethink this one, but I think it will converge
 				if rng.random() < 0.5:
 					Eloc_arr.append(Npsi-1)
@@ -81,16 +59,18 @@ def ECupdate(psi, syndromes):
 			if si != sip:
 				init_arr[1] = 1
 			if np.array_equal(init_arr, np.array([1,0])):
-				#j = i if rng.random() < 0.5 else i+1 random choice 
-				Eloc_arr.append(i)
+				if rng.random() < 0.5:
+					Eloc_arr.append(i)
 			if np.array_equal(init_arr, np.array([0,1])) or np.array_equal(init_arr, np.array([1,1])):
-				#j = i if rng.random() < 0.5 else i+1 random choice
-				Eloc_arr.append(i+1)
-			#if np.array_equal(init_arr, np.array([1,1])):
-				#j = i if rng.random() < 0.5 else i+1 #random choice
-				#Eloc_arr.append(j)
+				if rng.random() < 0.5:
+					Eloc_arr.append(i+1)
+			if np.array_equal(init_arr, np.array([1,1])):
+				if rng.random() < 0.5:
+					Eloc_arr.append(i+1)
 		init_arr = np.zeros(2, dtype = int) #restoring init_arr
+	
 	Eloc_ammend = set(Eloc_arr)
+	print("error locations", Eloc_ammend)
 	return Eloc_ammend
 
 def Denoise(psi,Errloc):
@@ -100,17 +80,19 @@ def Denoise(psi,Errloc):
 	return psi_decode
 
 def Syndrome(psi):
-	syndr_arr = np.ones(len_psi - 1, dtype = int)
+	len_psi = len(psi)
+	syndr_arr = np.zeros(len_psi - 1, dtype = int)
 	for i in range(0, len_psi - 1): #0-indexing here and syndrome length
-        	if psi_initial[i] != psi_initial[i+1]: #flag domain walls with 1
-                	syndr_arr[i] = -1
+        	if psi[i] != psi[i+1]: #flag domain walls with 1
+                	syndr_arr[i] = 1
+	print("Syndrome Array:", syndr_arr)
 	return syndr_arr
 
 def Energy(psi):
 	E_i = []
 	syndr_arr = Syndrome(psi)
 	for i in range(0,len(syndr_arr)):
-		E_i.append(syndr_arr[i]*syndr_arr[i+1])
+		E_i.append(syndr_arr[i])
 	E_total = np.sum(E_i)
 	return E_total
 
@@ -119,15 +101,17 @@ def Diss_step(psi_init):
 	synd_i = Syndrome(psi_i)
 	Energy_i = Energy(psi_i)
 	psi_denoised = Denoise(psi_i,ECupdate(psi_i,synd_i))
- 	Energy_f = Energy(psi_denoised)
-	if Energy_i => Energy_f:
+	Energy_f = Energy(psi_denoised)
+	if Energy_i >= Energy_f:
+		print("Energy is:", Energy_i, "vs", Energy_f,"modification accepted")
 		return psi_denoised
 	else:
+		print("Energy is:", Energy_i, "vs", Energy_f,"modification rejected")
 		return psi_i
 
-trial_state = [0,1,0,0,0,1,0,1]
-for i in range(10):
+trial_state = [1,1,0,0,1,0,1,0,0,1,0,0,0,0]
+while np.sum(trial_state) != 0:
 	trial_state = Diss_step(trial_state)
-	print("trial step:", trial_state)
+	print("trial step:", trial_state, "with energy", Energy(trial_state))
 #print("trial: ", ECupdate(trial1,syn1), "for noisy state:", trial1, "and denoisied state is:", Denoise(trial1, ECupdate(trial1,syn1)))
 
