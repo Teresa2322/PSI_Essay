@@ -67,9 +67,11 @@ def ECupdate(psi, syndromes):
 			if sN != sN2:
 				init_arr[1] = 1
 			if np.array_equal(init_arr, np.array([1,1])) or np.array_equal(init_arr, np.array([1,0])): #possibly rethink this one, but I think it will converge
-				Eloc_arr.append(Npsi-1) #last slot on psi
+				if rng.random() < 0.5:
+					Eloc_arr.append(Npsi-1)
 			if np.array_equal(init_arr,np.array([0,1])):
-				Eloc_arr.append(Npsi-2) #flip second to last
+				if rng.random() < 0.5:
+					Eloc_arr.append(Npsi-2) #flip second to last
 		else:
 			si = syndromes[i]
 			sim = syndromes[i-1]
@@ -97,5 +99,35 @@ def Denoise(psi,Errloc):
 		psi_decode[i] = psi_decode[i]^1
 	return psi_decode
 
-print("trial: ", ECupdate(trial1,syn1), "for noisy state:", trial1, "and denoisied state is:", Denoise(trial1, ECupdate(trial1,syn1)))
+def Syndrome(psi):
+	syndr_arr = np.ones(len_psi - 1, dtype = int)
+	for i in range(0, len_psi - 1): #0-indexing here and syndrome length
+        	if psi_initial[i] != psi_initial[i+1]: #flag domain walls with 1
+                	syndr_arr[i] = -1
+	return syndr_arr
+
+def Energy(psi):
+	E_i = []
+	syndr_arr = Syndrome(psi)
+	for i in range(0,len(syndr_arr)):
+		E_i.append(syndr_arr[i]*syndr_arr[i+1])
+	E_total = np.sum(E_i)
+	return E_total
+
+def Diss_step(psi_init):
+	psi_i = psi_init.copy()
+	synd_i = Syndrome(psi_i)
+	Energy_i = Energy(psi_i)
+	psi_denoised = Denoise(psi_i,ECupdate(psi_i,synd_i))
+ 	Energy_f = Energy(psi_denoised)
+	if Energy_i => Energy_f:
+		return psi_denoised
+	else:
+		return psi_i
+
+trial_state = [0,1,0,0,0,1,0,1]
+for i in range(10):
+	trial_state = Diss_step(trial_state)
+	print("trial step:", trial_state)
+#print("trial: ", ECupdate(trial1,syn1), "for noisy state:", trial1, "and denoisied state is:", Denoise(trial1, ECupdate(trial1,syn1)))
 
