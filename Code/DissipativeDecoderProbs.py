@@ -3,20 +3,17 @@ import scipy as sp
 import math 
 
 rng = np.random.default_rng()
-'''
-psi_initial = np.zeros(20,  dtype=int )
 
-p_i = 0.5 #probability of bit flip
+N =  20 
+p_i = 0.7
+
+psi_initial = (np.random.random(N) <= p_i).astype(int)
+print("Initial random psi:", psi_initial)
+#np.random.random(n) generatesd random floats between 0 and 1
+#.astype(int) converts true to 1 and false to 0.
 
 max_decode = math.floor((len(psi_initial)-1)/2)
 
-for i in range(1,len(psi_initial)):
-    	p = rng.random()
-    	if p <= p_i and psi_initial[i] == 0:
-        	psi_initial[i] = 1
-    	elif p <= p_i and psi_initial[i] == 1:
-        	psi_initial[i] = 0
-'''
 def ECupdate(psi, syndromes):
 	init_arr = np.zeros(2, dtype = int)
 	Eloc_arr = [] #location of errors on psi 0-indexing
@@ -109,8 +106,8 @@ def Diss_step(psi_init):
 		print("Energy is:", Energy_i, "vs", Energy_f,"modification rejected")
 		return psi_i
 
-trial_state = [1,1,0,0,1,0,1,0,0,1,0,0,0,0]
-while np.sum(trial_state) != 0:
+trial_state = psi_initial
+for i in range(500):
 	trial_state = Diss_step(trial_state)
 	print("trial step:", trial_state, "with energy", Energy(trial_state))
 #print("trial: ", ECupdate(trial1,syn1), "for noisy state:", trial1, "and denoisied state is:", Denoise(trial1, ECupdate(trial1,syn1)))
