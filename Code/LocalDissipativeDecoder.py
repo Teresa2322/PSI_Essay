@@ -6,7 +6,7 @@ rng = np.random.default_rng()
 
 psi_initial = np.zeros(20,  dtype=int )
 
-p_i = 0.3 #probability of bit flip
+p_i = 0.4  #probability of bit flip
 
 J = 1
 
@@ -27,9 +27,9 @@ print("initial noisy psi", psi_noisy)
 len_psi = len(psi_initial)
 
 def syndrome_calc(psi):
-	syndr_arr = np.ones(len_psi - 1, dtype = int) #in terms of 1s in this case
+	syndr_arr = np.ones(len(psi) - 1, dtype = int) #in terms of 1s in this case
 	for i in range(0, len_psi - 1): #0-indexing here
-		if psi_initial[i] != psi_initial[i+1]: #flag domain walls with 1
+		if psi[i] != psi[i+1]: #flag domain walls with 1
 			syndr_arr[i] = -1
 	return syndr_arr
 
@@ -71,9 +71,9 @@ def Denoise(psi,Errloc):
 		psi_decode[i] = psi_decode[i]^1
 	return psi_decode
 
-for i in range(2):
+for i in range(1000):
 	psi = Denoise(psi_decoded,Decode_step(syndrome_calc(psi_decoded)))
-	print("psi:", psi)
 	psi_decoded = psi
 
+print("psi decoded:", psi)
 
