@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.3  #probability of bit flip
+p_i = 0.7  #probability of bit flip
 N_s = 30
 J = 1
 
@@ -33,8 +33,10 @@ psi_decoded = psi_initial.copy()
 
 def Decode_step(i, psi, synd_arr):
 	psi_d = psi.copy()
-	if  (i == 0 or i == len(synd_arr) - 1):
-		DE_i = 2*J*synd_arr[i] 
+	if  i == 0:
+		DE_i = 2*J*synd_arr[0]
+	elif i == len(psi) - 1:
+		DE_i = 2*J*synd_arr[i - 1] #adjust from psi to synd indices 
 	else:
 		DE_i = 2*J*(synd_arr[i] + synd_arr[i-1]) 
 	if DE_i < 0:
@@ -52,9 +54,10 @@ def Decoding_full(psi):
 	nit = 0
 	state_hist = [psi]
 	synd_hist = [syndrome_calc(psi)]
+	#num_domain_walls = np.sum(syndrome == -1)
 	psi_d = psi.copy()
 	while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 10000):
-		for i in range(0, psi_len - 1):
+		for i in rng.permutation(psi_len): #for i in range(0, psi_len - 1):
 			psi_i = Decode_step(i, psi_d, syndrome_calc(psi_d))
 			psi_d = psi_i
 		state_hist.append(psi_d)
@@ -75,7 +78,9 @@ cbar = plt.colorbar(im, ticks=[0, 1])
 cbar.ax.set_yticklabels(['0', '1'])
 plt.xlabel("Site index")
 plt.xticks(np.arange(N_s))
+plt.yticks(np.arange(0, nit+1, 1))
 plt.gca().set_xticklabels([])
+plt.gca().set_yticklabels([])
 
 plt.ylabel("Decoding step")
 plt.title(f"State Evolution, p_i = {p_i}, N_i = {nit} ")
