@@ -6,9 +6,9 @@ from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.7  #probability of bit flip
-N_s = 30
-J = 1
+p_i = 0.4 #probability of bit flip
+N_s = 30 #number of sites
+J = 1 #Hamiltonian parameter
 
 def Noise(psi,p_i):
 	for i in range(1,len(psi)):
