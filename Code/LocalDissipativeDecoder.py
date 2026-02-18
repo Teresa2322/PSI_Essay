@@ -2,27 +2,24 @@ import numpy as np
 import scipy as sp
 import math
 import matplotlib.pyplot as plt
+from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.1  #probability of bit flip
-
-J = 1
+p_i = 0.2  #probability of bit flip
+N_s = 30
+J = 10
 
 def Noise(psi,p_i):
 	for i in range(1,len(psi)):
-    		p = rng.random()
-    		if p <= p_i and psi[i] == 0:
+    		if rng.random() <= p_i:
         		psi[i] = 1
-    		elif p <= p_i and psi[i] == 1:
-        		psi[i] = 0
 	return psi
 
-psi_initial = Noise(np.zeros(20, dtype = int),p_i)
+psi_initial = Noise(np.zeros(N_s, dtype = int),p_i)
 
 max_decode = math.floor((len(psi_initial)-1)/2)
 
-print("initial noisy psi", psi_initial)
 len_psi = len(psi_initial)
 
 def syndrome_calc(psi):
@@ -66,6 +63,7 @@ def Decoding_single_step(psi,Errloc):
 	return psi_d
 
 def Decoding_full(psi):
+	print("initial noisy psi", psi)
 	psi_len = len(psi)
 	nit = 0
 	spin_history = [psi]
@@ -77,25 +75,44 @@ def Decoding_full(psi):
 		nit += 1
 		spin_history.append(psi_d)
 		syndrome_history.append(syndrome_calc(psi_d))
+	print("total iterations", nit)
 	return psi_decoded, nit, spin_history, syndrome_history
 
 
-#print("psi decoded:", Decoding_full(psi_decoded)[0])
-#print("Number of iterations:", Decoding_full(psi_decoded)[1])
-#print("Spin history", Decoding_full(psi_decoded)[2])
-#print("Syndrome history", Decoding_full(psi_decoded)[3])
+psi_final, nit, spin_history, syndrome_history = Decoding_full(psi_decoded)
 
-spin_hist_arr = np.array(Decoding_full(psi_decoded)[2])
+spin_hist_arr = np.array(spin_history)
+synd_hist_arr = np.array(syndrome_history)
+
 
 #have to be able to collect this spin and syndrome array history for THE SAME RUN!!
 
 plt.figure(1)
-plt.imshow(spin_hist_arr, aspect='auto')
-plt.xlabel("Spin index")
+
+cmap = ListedColormap(["white", "blue"])
+im = plt.imshow(spin_hist_arr, interpolation = 'nearest', cmap = cmap, vmin = 0, vmax = 1, aspect='auto')
+cbar = plt.colorbar(im, ticks=[0, 1])
+cbar.ax.set_yticklabels(['0', '1'])
+plt.xlabel("Site index")
+plt.xticks(np.arange(N_s))
+plt.gca().set_xticklabels([])
+
 plt.ylabel("Decoding step")
-plt.title("Spin Evolution During Decoding")
+plt.title(f"State Evolution, p_i = {p_i}, N_i = {nit} ")
 
 plt.show()
+
+plt.figure(2)
+
+cmap = ListedColormap(["white", "blue"])
+plt.imshow(synd_hist_arr, aspect='auto')
+plt.xlabel("Site index")
+plt.xticks(np.arange(N_s - 1))
+plt.gca().set_xticklabels([])
+
+plt.ylabel("Decoding step")
+plt.title("Syndrome Evolution During Decoding")
+
 
 '''
 Code for analyzing number of decoding steps 
