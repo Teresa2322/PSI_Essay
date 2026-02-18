@@ -6,9 +6,9 @@ from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.4  #probability of bit flip
+p_i = 0.3  #probability of bit flip
 N_s = 30
-J = 10
+J = 1
 
 def Noise(psi,p_i):
 	for i in range(1,len(psi)):
@@ -31,61 +31,41 @@ def syndrome_calc(psi):
 
 psi_decoded = psi_initial.copy()
 
-def DeltaH_i(Si, Sim):
-	return 2*J*(Si + Sim)
-
-def DeltaH_edge(Si):
-	return 2*J*Si
-
-def Decode_step(synd_arr):
-	flip_arr = []
-	for i in range(len(synd_arr)):
-
-		if  i == 0:
-			DE_i = DeltaH_edge(synd_arr[i])
-		elif i == len(synd_arr) - 1:
-			DE_i = DeltaH_edge(synd_arr[i])
-		else:
-			DE_i = DeltaH_i(synd_arr[i],synd_arr[i-1])
-		if DE_i < 0:
-			flip_arr.append(i) #accept flip at site i
-		elif DE_i > 0:
-			pass #reject flip at site i 
-		elif DE_i == 0:
-			if rng.random() < 0.5:
-				flip_arr.append(i) #randomly accept or reject flip
-	return flip_arr
-
-def Decoding_single_step(psi,Errloc):
+def Decode_step(i, psi, synd_arr):
 	psi_d = psi.copy()
-	for i in Errloc:
-		psi_d[i] = psi_d[i]^1
+	if  (i == 0 or i == len(synd_arr) - 1):
+		DE_i = 2*J*synd_arr[i] 
+	else:
+		DE_i = 2*J*(synd_arr[i] + synd_arr[i-1]) 
+	if DE_i < 0:
+		psi_d[i] = psi_d[i]^1 #accept flip at site i
+	elif DE_i > 0:
+		pass #reject flip at site i 
+	elif DE_i == 0:
+		if rng.random() < 0.5:
+			psi_d[i] = psi_d[i]^1 #randomly accept or reject flip
+	#RETHINK INDEXING!! syndrome is len(psi)-1
 	return psi_d
 
 def Decoding_full(psi):
-	print("initial noisy psi", psi)
 	psi_len = len(psi)
 	nit = 0
-	spin_history = [psi]
-	syndrome_history = [syndrome_calc(psi)]
+	state_hist = [psi]
+	synd_hist = [syndrome_calc(psi)]
 	psi_d = psi.copy()
 	while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 10000):
-		psi_i = Decoding_single_step(psi_d,Decode_step(syndrome_calc(psi_d)))
-		psi_d = psi_i #rethink this structure later
+		for i in range(0, psi_len - 1):
+			psi_i = Decode_step(i, psi_d, syndrome_calc(psi_d))
+			psi_d = psi_i
+		state_hist.append(psi_d)
 		nit += 1
-		spin_history.append(psi_d)
-		syndrome_history.append(syndrome_calc(psi_d))
-	print("total iterations", nit)
-	return psi_decoded, nit, spin_history, syndrome_history
-
+		synd_hist.append(syndrome_calc(psi_d))
+	return psi_d, nit, state_hist, synd_hist
 
 psi_final, nit, spin_history, syndrome_history = Decoding_full(psi_decoded)
 
 spin_hist_arr = np.array(spin_history)
 synd_hist_arr = np.array(syndrome_history)
-
-
-#have to be able to collect this spin and syndrome array history for THE SAME RUN!!
 
 plt.figure(1)
 
