@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.2  #probability of bit flip
+p_i = 0.4  #probability of bit flip
 N_s = 30
 J = 10
 
