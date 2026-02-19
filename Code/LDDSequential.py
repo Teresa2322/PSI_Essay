@@ -6,7 +6,7 @@ from matplotlib.colors import ListedColormap
 
 rng = np.random.default_rng()
 
-p_i = 0.4 #probability of bit flip
+p_i = 0.9 #probability of bit flip
 N_s = 30 #number of sites
 J = 1 #Hamiltonian parameter
 
@@ -89,6 +89,7 @@ plt.show()
 
 plt.figure(2)
 
+'''
 cmap = ListedColormap(["white", "blue"])
 plt.imshow(synd_hist_arr, aspect='auto')
 plt.xlabel("Site index")
@@ -97,22 +98,16 @@ plt.gca().set_xticklabels([])
 
 plt.ylabel("Decoding step")
 plt.title("Syndrome Evolution During Decoding")
-
-
 '''
-Code for analyzing number of decoding steps 
-needed for a given p_i
 
-nit_arr = []
+n_arr = []
 for i in range(100):
-	psi_n = Noise(np.zeros(20, dtype = int),p_i)
-	print(psi_n)
-	nit_arr.append(Decoding_full(psi_n)[1])
+	psi_n = Noise(np.zeros(N_s, dtype = int),p_i)
+	n_arr.append(Decoding_full(psi_n)[1])
 
-plt.figure(1)
+plt.figure(2)
 plt.title(f"Histogram: Bit Flip Probability {p_i}")
-plt.hist(nit_arr, bins = 100)
+plt.hist(n_arr, bins = 20)
 plt.xlabel("Number of Decoding Iterations")
 plt.show()
-'''
 
