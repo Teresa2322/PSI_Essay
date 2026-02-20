@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 rng = np.random.default_rng()
 
-p_i = 0.2 #probability of bit flip
-N_s = 50 #number of sites
+p_i = 0.3 #probability of bit flip
+N_s = 10 #number of sites
 J = 1 #Ising Hamiltonian parameter
 
 def Noise(psi,p_i):
