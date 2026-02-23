@@ -1,25 +1,27 @@
 import numpy as np
-import scipy as sp
 import math
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from tqdm import tqdm
+import timeit
+
 rng = np.random.default_rng()
 
-N_s = 60 #number of sites
+N_s = 10 #number of sites
 J = 1 #Ising Hamiltonian parameter
 
-pi_arr = np.linspace(0,1,20)
+pi_arr = np.linspace(0,1,50)
 
 success_arr = []
 success_p_arr = []
+
 for p_i in pi_arr:
 	success_arr.clear()
-	for t in range(101):
-		def Noise(psi,p_i):
-			return np.where(rng.random(len(psi)) <= p_i, 1, psi)
+	for t in tqdm(range(1001), desc = "sampling for mean"):
+		def Noise(psi,p):
+			return np.where(rng.random(len(psi)) <= p, 1, psi)
 
 		psi_initial = Noise(np.zeros(N_s, dtype = int),p_i)
-
 		len_psi = len(psi_initial)
 
 		def syndrome_calc(psi):
@@ -28,50 +30,59 @@ for p_i in pi_arr:
 				if psi[i] != psi[i+1]:
 					syndr_arr[i] = -1
 			return syndr_arr
+		def s_i(m, p): #where m and p are psi values
+			if m != p:
+				return -1
+			else: 
+				return 1
 
 		psi_decoded = psi_initial.copy()
 
-		def Decode_step(i, psi, synd_arr):
-			psi_d = psi.copy()
+		def Decode_step(i, psi):
+			#psi_d = psi.copy()
+			len_psi = len(psi)
 			if  i == 0:
-				DE_i = 2*J*synd_arr[0]
-			elif i == len(psi) - 1:
-				DE_i = 2*J*synd_arr[i - 1]
+				DE_i = 2*J*s_i(psi[0],psi[1]) #synd_arr[0]
+			elif i == len_psi - 1:
+				DE_i = 2*J*s_i(psi[len_psi - 2], psi[len_psi - 1]) #[i - 1]
 				#adjusting from psi to synd indices
 			else:
-				DE_i = 2*J*(synd_arr[i] + synd_arr[i-1])
+				DE_i = 2*J*(s_i(psi[i],psi[i+1]) + s_i(psi[i-1],psi[i])) #synd_arr[i] + synd_arr[i-1])
 			if DE_i < 0:
-				psi_d[i] = psi_d[i]^1
+				psi[i] = psi[i]^1
 			elif DE_i > 0:
 				pass
 			elif DE_i == 0:
 				if rng.random() < 0.5:
-					psi_d[i] = psi_d[i]^1
-			return psi_d
-
+					psi[i] = psi[i]^1
+			return psi
 		def Decoding_full(psi):
 			psi_len = len(psi)
 			nit = 0
-			state_hist = [psi]
-			synd_hist = [syndrome_calc(psi)]
+			#state_hist = [psi]
 			psi_d = psi.copy()
-			while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 10000):
+			while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 1000000):
 				for i in rng.permutation(psi_len):
-					psi_i = Decode_step(i, psi_d, syndrome_calc(psi_d))
+					psi_i = Decode_step(i, psi_d)
 					psi_d = psi_i
-				state_hist.append(psi_d)
+				#state_hist.append(psi_d)
 				nit += 1
-				synd_hist.append(syndrome_calc(psi_d))
-			return psi_d, nit, state_hist, synd_hist
+			return psi_d, nit #state_hist #synd_hist
 
-		psi_final, nit, spin_history, syndrome_history = Decoding_full(psi_decoded)
+		psi_final, nit  = Decoding_full(psi_decoded)
+		#print("final psi", psi_final)
+		#print("nit final", nit)
 		if sum(psi_final) == 0:
 			success_arr.append(1)
-	average_success = sum(success_arr)/100
-	success_p_arr.append(average_success)
+	average_success = np.sum(success_arr)/1000
+	print("success array is:", success_arr)
+	success_p_arr.append(1 - average_success)
 
 plt.scatter(pi_arr, success_p_arr)
+plt.ylabel("failure probability")
+plt.xlabel("pi")
 plt.show()
+
 
 '''
 spin_hist_arr = np.array(spin_history)
