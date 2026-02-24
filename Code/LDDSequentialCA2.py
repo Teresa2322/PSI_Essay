@@ -7,17 +7,17 @@ import timeit
 
 rng = np.random.default_rng()
 
-N_s = 70 #number of sites
+N_s = 250 #number of sites
 J = 1 #Ising Hamiltonian parameter
 
-pi_arr = np.linspace(0,1,20)
+pi_arr = np.linspace(0,0.50,10)
 
 success_arr = []
 success_p_arr = []
 
 for p_i in pi_arr:
 	success_arr.clear()
-	for t in tqdm(range(201), desc = "sampling for mean"):
+	for t in tqdm(range(401), desc = "sampling for mean"):
 		def Noise(psi,p):
 			return np.where(rng.random(len(psi)) <= p, -1, psi)
 		
@@ -67,7 +67,7 @@ for p_i in pi_arr:
 		#print("nit final", nit)
 		if sum(psi_final) == len_psi:
 			success_arr.append(1)
-	average_success = np.sum(success_arr)/200
+	average_success = np.sum(success_arr)/400
 	#print("success array is:", success_arr)
 	success_p_arr.append(1 - average_success)
 
