@@ -6,74 +6,73 @@ from tqdm import tqdm
 import timeit
 
 rng = np.random.default_rng()
+J = 1
 
-N_s = 250 #number of sites
-J = 1 #Ising Hamiltonian parameter
+def Nsy_state(N,p):
+	psi_i = np.ones(N,dtype = int)
+	return np.where(rng.random(N) <= p, -1, psi_i)
 
-pi_arr = np.linspace(0,0.50,10)
+#ik i don't use this function but I am keeping it for later 
+def syndrome_calc(psi):
+	syndr_arr = []
+	for i in range(0, len_psi - 1):
+		syndr_arr.append(psi[i]*psi[i+1])
+	return syndr_arr
 
-success_arr = []
+def s_i(psi_m, psi_p):
+	return psi_m*psi_p
+
+def Decode_step(i, psi, N_s):
+	if  i == 0:
+		DE_i = 2*J*s_i(psi[0],psi[1])
+	elif i == N_s - 1:
+		DE_i = 2*J*s_i(psi[N_s - 2], psi[N_s - 1])
+	else:
+		DE_i = 2*J*(s_i(psi[i-1],psi[i]) + s_i(psi[i],psi[i+1]))
+
+	if DE_i < 0:
+		psi[i] *= -1
+	elif DE_i > 0:
+		pass
+	elif DE_i == 0:
+		if rng.random() < 0.5:
+			psi[i] *= -1
+	return psi
+
+def Decoding_full(psi, N_s):
+	nit = 0
+	psi_d = psi.copy()
+	while (np.abs(sum(psi_d)) != N_s):  
+		for i in rng.permutation(N_s):
+			psi_i = Decode_step(i, psi_d, N_s)
+			psi_d = psi_i
+			nit += 1
+	return psi_d, nit 
+
+pi_arr = np.linspace(0,0.5,8)
+Ns_arr = [10, 100, 300]
+print("N array:", Ns_arr)
 success_p_arr = []
+N_mi = 200
 
-for p_i in pi_arr:
-	success_arr.clear()
-	for t in tqdm(range(401), desc = "sampling for mean"):
-		def Noise(psi,p):
-			return np.where(rng.random(len(psi)) <= p, -1, psi)
-		
-		psi_initial = Noise(np.ones(N_s, dtype = int),p_i)
-		len_psi = len(psi_initial)
+for N_i in Ns_arr:
+	success_p_arr.clear()
+	for p_i in pi_arr:
+		success_n = 0
+		for t in tqdm(range(N_mi + 1), desc = "sampling for mean"):
+			psi_initial = Nsy_state(N_i,p_i)
+			psi_final, nit  = Decoding_full(psi_initial, N_i)
+			if np.sum(psi_final) == N_i:
+				success_n += 1
+		average_success = success_n/N_mi
+		success_p_arr.append(1 - average_success)
 
-		def syndrome_calc(psi):
-			syndr_arr = []
-			for i in range(0, len_psi - 1):
-				syndr_arr.append(psi[i]*psi[i+1])
-			return syndr_arr
+	plt.scatter(pi_arr, success_p_arr, label = f"N={N_i}")
 
-		def s_i(psi_m, psi_p): #where m and p are psi values
-			return psi_m*psi_p #this is a bit silly but I wanna keep syndrome language?
 
-		def Decode_step(i, psi):
-			#psi_d = psi.copy()
-			if  i == 0:
-				DE_i = 2*J*s_i(psi[0],psi[1]) 
-			elif i == len_psi - 1:
-				DE_i = 2*J*s_i(psi[len_psi - 2], psi[len_psi - 1]) 
-			else:
-				DE_i = 2*J*(s_i(psi[i-1],psi[i]) + s_i(psi[i],psi[i+1])) 
-			if DE_i < 0:
-				psi[i] *= -1
-			elif DE_i > 0:
-				pass
-			elif DE_i == 0:
-				if rng.random() < 0.5:
-					psi[i] *= -1
-			return psi
-		def Decoding_full(psi):
-			psi_len = len(psi)
-			nit = 0
-			#state_hist = [psi]
-			psi_d = psi.copy()
-			while (np.abs(sum(psi_d)) != psi_len and nit < 1000000):
-				for i in rng.permutation(psi_len):
-					psi_i = Decode_step(i, psi_d)
-					psi_d = psi_i
-				#state_hist.append(psi_d)
-				nit += 1
-			return psi_d, nit #state_hist #synd_hist
-
-		psi_final, nit  = Decoding_full(psi_initial)
-		#print("final psi", psi_final)
-		#print("nit final", nit)
-		if sum(psi_final) == len_psi:
-			success_arr.append(1)
-	average_success = np.sum(success_arr)/400
-	#print("success array is:", success_arr)
-	success_p_arr.append(1 - average_success)
-
-plt.scatter(pi_arr, success_p_arr)
 plt.ylabel("failure probability")
 plt.xlabel("pi")
+plt.legend()
 plt.show()
 
 
