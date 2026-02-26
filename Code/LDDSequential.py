@@ -41,7 +41,7 @@ def Decode_step(i, psi, synd_arr):
 	elif DE_i > 0:
 		pass #reject flip at site i 
 	elif DE_i == 0:
-		if rng.random() < 0.5:
+		if rng.random() < 0.1:
 			psi_d[i] = psi_d[i]^1 #randomly accept or reject flip
 	return psi_d
 
@@ -52,7 +52,7 @@ def Decoding_full(psi):
 	synd_hist = [syndrome_calc(psi)]
 	psi_d = psi.copy()
 	while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 10000):
-		for i in rng.permutation(psi_len):
+		for i in range(0,psi_len): #rng.permutation(psi_len):
 			psi_i = Decode_step(i, psi_d, syndrome_calc(psi_d))
 			psi_d = psi_i
 		state_hist.append(psi_d)
