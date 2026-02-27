@@ -29,30 +29,29 @@ def Decode_step(i, psi, N_s):
 		DE_i = 2*J*s_i(psi[N_s - 2], psi[N_s - 1])
 	else:
 		DE_i = 2*J*(s_i(psi[i-1],psi[i]) + s_i(psi[i],psi[i+1]))
-
 	if DE_i < 0:
-		psi[i+1] *= -1
+		psi[i] *= -1
 	elif DE_i > 0:
 		pass
 	elif DE_i == 0:
 		if rng.random() < 0.5:
-			psi[i+1] *= -1
+			psi[i] *= -1
 	return psi
 
 def Decoding_full(psi, N_s):
 	nit = 0
 	psi_d = psi.copy()
 	while (np.abs(sum(psi_d)) != N_s):  
-		for i in range(N_s-1): #should maybe be range of syndrome-1 #rng.permutation(N_s):
+		for i in range(N_s): #should maybe be range of syndrome-1 #rng.permutation(N_s):
 			psi_i = Decode_step(i, psi_d, N_s)
 			psi_d = psi_i
 			nit += 1
 	return psi_d, nit
 
-pi_arr = [0.2,0.25,0.4,0.6, 0.8]
-Ns_arr = [900]
+pi_arr = [0.2,0.3,0.5]
+Ns_arr = [20,50,100,150,200, 300]
 success_p_arr = []
-N_mi = 150
+N_mi = 200
 average_nit_arr = []
 nit_arr = []
 
@@ -82,22 +81,16 @@ for N_i in Ns_arr:
 		success_p_arr.append(1 - average_success)
 	i += 1
 	print("i: ", i)
-plt.scatter(pi_arr, success_p_arr, label = f"N={N_i}")
+	#plt.scatter(pi_arr, success_p_arr, label = f"N={N_i}")
 
 #plt.scatter(Ns_arr, PN[:][0])
-#plt.scatter(np.array(Ns_arr), PN[:,0])
-#plt.scatter(np.array(Ns_arr), PN[:,1])
-#plt.scatter(np.array(Ns_arr), PN[:,2])
+plt.scatter(np.array(Ns_arr), PN[:,0])
+plt.scatter(np.array(Ns_arr), PN[:,1])
+plt.scatter(np.array(Ns_arr), PN[:,2])
 
-print("Check 1:", PN[0,:], "and ", Ns_arr)
-
-print("Check 2:", PN[:,0], "and ", Ns_arr)
-
-print("Check 3:", PN[:][:], "and ", Ns_arr)
-
-plt.ylabel("failure probability")
-plt.xlabel("pi")
-#plt.legend()
+plt.ylabel("N_it/T_dec")
+plt.xlabel("Ns")
+plt.legend()
 plt.show()
 
 
