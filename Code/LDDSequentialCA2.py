@@ -49,10 +49,10 @@ def Decoding_full(psi, N_s):
 			nit += 1
 	return psi_d, nit
 
-pi_arr = [0.2, 0.30,0.50]
-Ns_arr = [20,50,100]
+pi_arr = [0.2,0.25,0.4,0.6, 0.8]
+Ns_arr = [900]
 success_p_arr = []
-N_mi = 100
+N_mi = 150
 average_nit_arr = []
 nit_arr = []
 
@@ -82,12 +82,12 @@ for N_i in Ns_arr:
 		success_p_arr.append(1 - average_success)
 	i += 1
 	print("i: ", i)
-#plt.scatter(pi_arr, success_p_arr, label = f"N={N_i}")
+plt.scatter(pi_arr, success_p_arr, label = f"N={N_i}")
 
 #plt.scatter(Ns_arr, PN[:][0])
-plt.scatter(np.array(Ns_arr), PN[:,0])
-plt.scatter(np.array(Ns_arr), PN[:,1])
-plt.scatter(np.array(Ns_arr), PN[:,2])
+#plt.scatter(np.array(Ns_arr), PN[:,0])
+#plt.scatter(np.array(Ns_arr), PN[:,1])
+#plt.scatter(np.array(Ns_arr), PN[:,2])
 
 print("Check 1:", PN[0,:], "and ", Ns_arr)
 

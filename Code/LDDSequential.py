@@ -37,12 +37,12 @@ def Decode_step(i, psi, synd_arr):
 	else:
 		DE_i = 2*J*(synd_arr[i] + synd_arr[i-1]) 
 	if DE_i < 0:
-		psi_d[i] = psi_d[i]^1 #accept flip at site i
+		psi_d[i+1] = psi_d[i+1]^1 #accept flip at site i
 	elif DE_i > 0:
 		pass #reject flip at site i 
 	elif DE_i == 0:
 		if rng.random() < 0.1:
-			psi_d[i] = psi_d[i]^1 #randomly accept or reject flip
+			psi_d[i+1] = psi_d[i+1]^1 #randomly accept or reject flip
 	return psi_d
 
 def Decoding_full(psi):
@@ -52,7 +52,7 @@ def Decoding_full(psi):
 	synd_hist = [syndrome_calc(psi)]
 	psi_d = psi.copy()
 	while (sum(psi_d) != 0 and sum(psi_d) != psi_len and nit < 10000):
-		for i in range(0,psi_len): #rng.permutation(psi_len):
+		for i in range(0,psi_len-1): #rng.permutation(psi_len):
 			psi_i = Decode_step(i, psi_d, syndrome_calc(psi_d))
 			psi_d = psi_i
 		state_hist.append(psi_d)
@@ -70,7 +70,7 @@ plt.figure(1)
 cmap = ListedColormap(["white", "blue"])
 im = plt.imshow(spin_hist_arr, interpolation = 'nearest', cmap = cmap, vmin = 0, vmax = 1, aspect='auto')
 cbar = plt.colorbar(im, ticks=[0, 1])
-cbar.ax.set_yticklabels(['0', '1'])
+cbar.ax.set_yticklabels(['-1', '1'])
 plt.xlabel("Site index")
 plt.xticks(np.arange(N_s))
 plt.yticks(np.arange(0, nit+1, 1))
@@ -102,7 +102,7 @@ for i in range(100):
 	psi_n = Noise(np.zeros(N_s, dtype = int),p_i)
 	n_arr.append(Decoding_full(psi_n)[1])
 
-plt.figure(2)
+[  448.4  7551.5 27778.5 55194. ] and  [20, 50, 75, 100]plt.figure(2)
 plt.title(f"Histogram: Bit Flip Probability {p_i}")
 plt.hist(n_arr, bins = 20)
 plt.xlabel("Number of Decoding Iterations")
