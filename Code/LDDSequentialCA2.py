@@ -5,12 +5,11 @@ from matplotlib.colors import ListedColormap
 from tqdm import tqdm
 from numba import njit
 
-rng = np.random.default_rng()
 J = 1
 
 def Nsy_state(N,p):
 	psi_i = np.ones(N,dtype = int)
-	return np.where(rng.random(N) <= p, -1, psi_i)
+	return np.where(np.random.random(N) <= p, -1, psi_i)
 
 def syndrome_calc(psi):
 	syndr_arr = []
@@ -23,7 +22,7 @@ def s_i(psi_m, psi_p):
 	return psi_m*psi_p
 
 @njit
-def Decode_step(i, psi, N_s):
+def DecodeStep(i, psi, N_s):
 	if  i == 0:
 		DE_i = 2*J*s_i(psi[0],psi[1])
 	elif i == N_s - 1:
@@ -38,21 +37,21 @@ def Decode_step(i, psi, N_s):
 		if np.random.rand() < 0.5:
 			psi[i] *= -1
 	return psi
-[0.2,0.3,0.5]
+
 
 @njit
-def Decoding_full(psi, N_s):
+def DecodingFull(psi, N_s):
 	nit = 0
 	psi_d = psi.copy()
 	while (np.abs(np.sum(psi_d)) != N_s):  
-		for i in range(N_s): #should maybe be range of syndrome-1 #rng.permutation(N_s):
-			psi_i = Decode_step(i, psi_d, N_s)
+		for i in np.random.permutation(N_s):
+			psi_i = DecodeStep(i, psi_d, N_s)
 			psi_d = psi_i
 			nit += 1
 	return psi_d, nit
 
 pi_arr = [0.1, 0.2, 0.3, 0.4, 0.5]
-Ns_arr = [100,600]
+Ns_arr = [600]
 success_p_arr = []
 N_mi = 200
 average_nit_arr = []
@@ -69,7 +68,7 @@ for N_i in Ns_arr:
 		success_n = 0
 		for _ in tqdm(range(N_mi), desc = "sampling for mean"):
 			psi_initial = Nsy_state(N_i,p_i)
-			psi_final, n_itr  = Decoding_full(psi_initial, N_i)
+			psi_final, n_itr  = DecodingFull(psi_initial, N_i)
 			if np.sum(psi_final) == N_i:
 				success_n += 1
 			nit_arr.append(n_itr)
